@@ -70,7 +70,9 @@ class SleepTrackerFragment : Fragment() {
         // Observe our SleepNight list from the viewmodel and set the adapter list equal to it when it changes
         sleepTrackerViewModel.nights.observe(viewLifecycleOwner, Observer {
             it?.let {
-                adapter.data = it
+                // This lets ListAdapter know that a new version of the list is available
+                // It will Diff the new list against the old one, then run all needed changes on the RecyclerView
+                adapter.submitList(it)
             }
         })
 

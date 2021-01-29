@@ -16,43 +16,31 @@
 
 package com.example.android.trackmysleepquality.sleeptracker
 
-import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.convertDurationToFormatted
 import com.example.android.trackmysleepquality.convertNumericQualityToString
 import com.example.android.trackmysleepquality.database.SleepNight
 
-// We are creating a SleepNightAdaper class
-// This class extends the RecyclerView.Adapter class so Android knows what type of adapter we are trying to create.
-// We must also say what kind of view holder that this recycler adapter will hold. Recycler interacts with view holders, not the views themselves. This is a generic holder, not a custom.
-// We will have a compile error because we need to implement a few methods, so that the RecyclerView knows how to use this adapter.
-class SleepNightAdapter: RecyclerView.Adapter<SleepNightAdapter.ViewHolder>(){
-
-    // This will hold the data that our adapter is adapting for the Recyclerview to use.
-    // RecyclerView will not use this data directly
-    var data = listOf<SleepNight>()
-        set(value){ // this custom setter is for when data in the list changes and the RecyclerView needs to know to change the data on the screen
-            field = value
-            notifyDataSetChanged() // This will cause an entire redraw of all items, which is not very efficient
-        }
-
-    // This is one of the methods that need to be overwritten
-    // Since the data list will hold the data that needs to be displayed, we will return the size of this list for this method
-    override fun getItemCount(): Int {
-        return data.size
-    }
+// We are creating a SleepNightAdapter class
+// We are extending a ListAdpater class now instead of the regular adapter as this list adapter helps us with DiffUtils
+// The first param(SleepNight) is the type that this list will hold
+// The second is the ViewHolder
+// The constructor param takes our item DiffUtil callback
+class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()){
 
     // This method is to tell RecyclerView how to actually draw an item
     // The RecyclerView calls this when something needs to be drawn and tells us the position of the item
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        val item = data[position] // create variable for current item in SleepNight list
+        val item = getItem(position)
         holder.bind(item)
 
     }
@@ -96,6 +84,19 @@ class SleepNightAdapter: RecyclerView.Adapter<SleepNightAdapter.ViewHolder>(){
             }
         }
 
+    }
+}
+
+class SleepNightDiffCallback : DiffUtil.ItemCallback<SleepNight>(){
+
+    // Tell DiffUtil how to check if two items are the same.
+    override fun areItemsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem.nightId == newItem.nightId // nightId are unique identifiers so we can use this to know if the SleepNight items/objects are the same
+    }
+
+    // Tell DiffUtil how to check if fields in item/object have changed
+    override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem == newItem // Easy way to compare object's fields
     }
 
 }
