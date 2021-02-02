@@ -18,30 +18,26 @@ package com.example.android.trackmysleepquality.sleeptracker
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.android.trackmysleepquality.R
-import com.example.android.trackmysleepquality.convertDurationToFormatted
-import com.example.android.trackmysleepquality.convertNumericQualityToString
 import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.databinding.ListItemSleepNightBinding
 
 // We are creating a SleepNightAdapter class
-// We are extending a ListAdpater class now instead of the regular adapter as this list adapter helps us with DiffUtils
+// We are extending a ListAdapter class now instead of the regular adapter as this list adapter helps us with DiffUtils
 // The first param(SleepNight) is the type that this list will hold
 // The second is the ViewHolder
 // The constructor param takes our item DiffUtil callback
-class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()){
+// The clickListener is a listener that the ViewModel Fragment will pass to us
+class SleepNightAdapter(val clickListener:SleepNightListener): ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()){
 
     // This method is to tell RecyclerView how to actually draw an item
     // The RecyclerView calls this when something needs to be drawn and tells us the position of the item
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        val item = getItem(position)
-        holder.bind(item)
+        // Tell data binding about click listener
+        holder.bind(getItem(position)!!, clickListener)
 
     }
 
@@ -55,8 +51,9 @@ class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(S
     // Code to define a new view holder that this adapter will use
     class ViewHolder private constructor(val binding: ListItemSleepNightBinding): RecyclerView.ViewHolder(binding.root){
 
-        fun bind(item: SleepNight) {
+        fun bind(item: SleepNight, clickListener: SleepNightListener) {
             binding.sleep = item // Set data object from xml to the current sleepnight
+            binding.clickListener = clickListener // Pass click listener to the binding object
             binding.executePendingBindings() // Tell binding to execute pending binds. This is for speed.
         }
 
@@ -83,4 +80,9 @@ class SleepNightDiffCallback : DiffUtil.ItemCallback<SleepNight>(){
         return oldItem == newItem // Easy way to compare object's fields
     }
 
+}
+
+// Callback for ViewHolder -> ViewModel
+class SleepNightListener(val clickListener: (sleepId: Long) -> Unit){
+    fun onClick(night: SleepNight) = clickListener(night.nightId)
 }
